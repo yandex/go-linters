@@ -45,7 +45,7 @@ func main() {
         deepequalproto.Analyzer,
         goodpackagenames.Analyzer,
         nonakedreturn.Analyzer,
-        remindercheck.Analyzer,
+        remindercheck.Analyzer(),
         returnstruct.Analyzer,
         structtagcase.Analyzer,
     )
