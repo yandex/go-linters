@@ -3,7 +3,7 @@ package externalUsers_test // want `invalid package name externalUsers_test, use
 import (
 	"testing"
 
-	externalusers "go-linters/passes/goodpackagenames/testdata/src/a/lintexamples/internal/services/externalUsers"
+	externalusers "a/lintexamples/internal/services/externalUsers"
 )
 
 func TestConstants(t *testing.T) {

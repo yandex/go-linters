@@ -3,7 +3,7 @@ package api_token_auth_test // want `invalid package name api_token_auth_test, u
 import (
 	"testing"
 
-	apitokenauth "go-linters/passes/goodpackagenames/testdata/src/a/lintexamples/internal/middlewares/api_token_auth"
+	apitokenauth "a/lintexamples/internal/middlewares/api_token_auth"
 )
 
 func TestConstants(t *testing.T) {

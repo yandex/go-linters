@@ -10,7 +10,7 @@ TODO: multi-line comments are ignored
 
 // FIXME:							// want `FIXME must include task id. Required template: '// FIXME: TASKID-1: comment'`
 
-// tODo: TASKID-1 make a coffee		// want `Keyword 'tODo' must be upper case. Required template: '// TODO: TASKID-1: comment'`
+// tODo: TASKID-1 make a coffee		// want `keyword 'tODo' must be upper case. Required template: '// TODO: TASKID-1: comment'`
 // TODO: TASKID-0 make a coffee		// want `TODO must use task id number greater zero: TASKID-0. Required template: '// TODO: TASKID-1: comment'`
 // TODO: (TASKID-1) make a coffee 	// want `TODO must be contains right parts. Required template: '// TODO: TASKID-1: comment'`
 // TODO(TASKID-1): make a coffee	// want `TODO must be contains right parts. Required template: '// TODO: TASKID-1: comment'`
