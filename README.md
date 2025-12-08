@@ -1,3 +1,5 @@
+![Static Badge](https://img.shields.io/badge/github-coverage-blue?logo=github)
+
 # Go Static Analyzers Collection
 
 This repository contains a set of static analyzers for Go code. Below is the list of available
