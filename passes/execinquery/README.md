@@ -1,9 +1,15 @@
-# execinquery - a simple query string checker in Query function
+# execinquery
 
-> Inspired by https://github.com/1uf3/execinquery
-
-execinquery is a linter about query string checker in Query function which reads your Go src files and
+`execinquery` is a linter about query string checker in Query function which reads your Go src files and
 warnings it finds.
+
+> # Disclaimer
+>
+> This is a fork of the original linter repository [execinquery](https://github.com/1uf3/execinquery).
+>
+> - Retains core functionality with possible modifications.
+> - License follows the original project (see `LICENSE`).
+> - Changes here may not sync with the original.
 
 ## Installation
 
