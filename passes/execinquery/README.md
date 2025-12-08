@@ -8,7 +8,7 @@ warnings it finds.
 > This is a fork of the original linter repository [execinquery](https://github.com/1uf3/execinquery).
 >
 > - Retains core functionality with possible modifications.
-> - License follows the original project (see `LICENSE`).
+> - All original code made before first commit in this repository distributes under MIT license.
 > - Changes here may not sync with the original.
 
 ## Usage
