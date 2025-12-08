@@ -12,6 +12,43 @@ func Test(t *testing.T) {
 	analysistest.Run(t, testdata, Analyzer, "a")
 }
 
+func TestForceCasing(t *testing.T) {
+	t.Run("no_flag", func(t *testing.T) {
+		testdata := analysistest.TestData()
+		analysistest.Run(t, testdata, Analyzer, "a")
+	})
+
+	t.Run("snake", func(t *testing.T) {
+		flagForceCasing = casingSnake
+		defer func() {
+			flagForceCasing = casingUnknown
+		}()
+
+		testdata := analysistest.TestData()
+		analysistest.Run(t, testdata, Analyzer, "force_snake")
+	})
+
+	t.Run("camel", func(t *testing.T) {
+		flagForceCasing = casingCamel
+		defer func() {
+			flagForceCasing = casingUnknown
+		}()
+
+		testdata := analysistest.TestData()
+		analysistest.Run(t, testdata, Analyzer, "force_camel")
+	})
+
+	t.Run("kebab", func(t *testing.T) {
+		flagForceCasing = casingKebab
+		defer func() {
+			flagForceCasing = casingUnknown
+		}()
+
+		testdata := analysistest.TestData()
+		analysistest.Run(t, testdata, Analyzer, "force_kebab")
+	})
+}
+
 func TestDetectCasing(t *testing.T) {
 	testCases := []struct {
 		name     string

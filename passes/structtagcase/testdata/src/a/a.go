@@ -29,7 +29,7 @@ type UnknownCasing struct {
 	Surname              string `bson:"surname"`
 	UsernameAlias        string `bson:"userName-alias"` // want `unknown casing in bson struct tag: userName-alias`
 	BankAccountNumber    string `bson:"bankAccountNumber"`
-	SocialSecurityNumber string `bson:"social_security_number"`
+	SocialSecurityNumber string `bson:"social_security_number"` // want `inconsistent text case in bson struct tag: social_security_number`
 	LikedGenres          string `bson:"likedGenres"`
 	PasswordSecret       string `bson:"-"`
 }

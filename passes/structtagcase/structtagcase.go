@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	flags.Var(&flagForceCase, "force-case", "force specific case to be used in struct tags: snake, camel, kebab")
+	flags.Var(&flagForceCasing, "force-casing", "force specific case to be used in struct tags: snake, camel, kebab")
 }
 
 const Name = "structtagcase"
@@ -52,8 +52,8 @@ func (s stringCasing) String() string {
 var (
 	knownKeys = []string{"json", "bson", "xml", "yaml"}
 
-	flags         flag.FlagSet
-	flagForceCase stringCasing
+	flags           flag.FlagSet
+	flagForceCasing stringCasing
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -93,7 +93,7 @@ func run(pass *analysis.Pass) (any, error) {
 			return false
 		}
 
-		checkTagsCasing(pass, structNode, flagForceCase)
+		checkTagsCasing(pass, structNode, flagForceCasing)
 
 		return true
 	})
@@ -127,14 +127,14 @@ func checkTagsCasing(pass *analysis.Pass, node *ast.StructType, forcedCase strin
 			}
 
 			tagCasing := detectCasing(name)
-			if forcedCase != casingUnknown && tagCasing != forcedCase {
+			if forcedCase != casingUnknown && tagCasing != casingUnknown && tagCasing != forcedCase {
 				pass.Reportf(field.End(), "%s struct tag must be in %s case: %s", tagKey, forcedCase, name)
-				break
+				continue
 			}
 
 			if tagCasing == casingMixed {
 				pass.Reportf(field.End(), "unknown casing in %s struct tag: %s", tagKey, name)
-				break
+				continue
 			}
 
 			// store first detected casing unconditionally
