@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/github-coverage-blue?logo=github)
+[![Static Badge](https://img.shields.io/badge/github-coverage-blue?logo=github)](https://yandex.github.io/go-linters/coverage)
 
 # Go Static Analyzers Collection
 
