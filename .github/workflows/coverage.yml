@@ -33,15 +33,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate coverprofile
         run: |
-          mkdir -p ./coverage
+          mkdir -p ./build/ ./build/coverage
           go test -race ./... -coverprofile=coverage.out -covermode=atomic && \
-          go tool cover -html=coverage.out -o ./coverage/index.html
+          go tool cover -html=coverage.out -o ./build/coverage/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './coverage'
+          path: './build'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
