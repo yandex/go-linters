@@ -16,7 +16,7 @@ func TestDetectCasing(t *testing.T) {
 	testCases := []struct {
 		name     string
 		value    string
-		expected int
+		expected stringCasing
 	}{
 		{"snake_case", "ololo_trololo", casingSnake},
 		{"camel_case", "ololoTrololo", casingCamel},
