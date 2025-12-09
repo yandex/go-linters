@@ -1,6 +1,7 @@
 package structtagcase
 
 import (
+	"flag"
 	"go/ast"
 	"reflect"
 	"strconv"
@@ -15,24 +16,51 @@ import (
 	"golang.yandex/linters/internal/nolint"
 )
 
-const (
-	Name = "structtagcase"
+func init() {
+	flags.Var(&flagForceCasing, "force-casing", "force specific case to be used in struct tags: snake, camel, kebab")
+}
 
-	casingUnknown = iota
-	casingSnake
-	casingCamel
-	casingKebab
-	casingMixed
+const Name = "structtagcase"
+
+type stringCasing string
+
+const (
+	casingUnknown stringCasing = ""
+	casingSnake   stringCasing = "snake"
+	casingCamel   stringCasing = "camel"
+	casingKebab   stringCasing = "kebab"
+	casingMixed   stringCasing = "mixed"
 )
+
+func (s *stringCasing) Set(v string) error {
+	switch stringCasing(v) {
+	case casingSnake, casingCamel, casingKebab:
+		*s = stringCasing(v)
+	}
+	return nil
+}
+
+func (s stringCasing) String() string {
+	switch s {
+	case casingSnake, casingCamel, casingKebab, casingMixed:
+		return string(s)
+	default:
+		return "unknown"
+	}
+}
 
 var (
 	knownKeys = []string{"json", "bson", "xml", "yaml"}
+
+	flags           flag.FlagSet
+	flagForceCasing stringCasing
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: Name,
-	Doc:  `structtagcase checks that you use consistent name case in struct tags`,
-	Run:  run,
+	Name:  Name,
+	Doc:   `structtagcase checks that you use consistent name case in struct tags`,
+	Run:   run,
+	Flags: flags,
 	Requires: []*analysis.Analyzer{
 		nolint.Analyzer,
 		nogen.Analyzer,
@@ -65,7 +93,7 @@ func run(pass *analysis.Pass) (any, error) {
 			return false
 		}
 
-		checkTagsCasing(pass, structNode)
+		checkTagsCasing(pass, structNode, flagForceCasing)
 
 		return true
 	})
@@ -73,7 +101,7 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-func checkTagsCasing(pass *analysis.Pass, node *ast.StructType) {
+func checkTagsCasing(pass *analysis.Pass, node *ast.StructType, forcedCase stringCasing) {
 	for _, tagKey := range knownKeys {
 		// start casing for struct key
 		keyCasing := casingUnknown
@@ -98,13 +126,18 @@ func checkTagsCasing(pass *analysis.Pass, node *ast.StructType) {
 				continue
 			}
 
-			// store first detected casing unconditionally
 			tagCasing := detectCasing(name)
-			if tagCasing == casingMixed {
-				pass.Reportf(field.End(), "unknown casing in %s struct tag: %s", tagKey, name)
-				break
+			if forcedCase != casingUnknown && tagCasing != casingUnknown && tagCasing != forcedCase {
+				pass.Reportf(field.End(), "%s struct tag must be in %s case: %s", tagKey, forcedCase, name)
+				continue
 			}
 
+			if tagCasing == casingMixed {
+				pass.Reportf(field.End(), "unknown casing in %s struct tag: %s", tagKey, name)
+				continue
+			}
+
+			// store first detected casing unconditionally
 			if keyCasing == casingUnknown {
 				keyCasing = tagCasing
 				continue
@@ -126,7 +159,7 @@ func extractTagName(value string) string {
 	return name
 }
 
-func detectCasing(value string) int {
+func detectCasing(value string) stringCasing {
 	var hasUnderscore, hasDash, hasLowercase, hasUppercase bool
 
 	for _, r := range value {
