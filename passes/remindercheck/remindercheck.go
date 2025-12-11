@@ -37,7 +37,7 @@ const (
 	taskIDHint   = "TASKID-1"
 )
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	files := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files).List()
 
 	format := pass.Analyzer.Flags.Lookup("format").Value.String()

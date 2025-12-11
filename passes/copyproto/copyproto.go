@@ -51,7 +51,7 @@ func markGoGoPkg(pass *analysis.Pass) {
 	}
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	markGoGoPkg(pass)
 
 	ins := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)

@@ -15,7 +15,7 @@ var CtxArgAnalyzer = &analysis.Analyzer{
 	Run:      ctxarg,
 }
 
-func ctxarg(pass *analysis.Pass) (interface{}, error) {
+func ctxarg(pass *analysis.Pass) (any, error) {
 	ins := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{

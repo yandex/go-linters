@@ -34,7 +34,7 @@ func newLinter() *linter {
 	}
 }
 
-func (l linter) run(pass *analysis.Pass) (interface{}, error) {
+func (l linter) run(pass *analysis.Pass) (any, error) {
 	result := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{
@@ -100,7 +100,7 @@ func (l linter) cleanValue(s string) string {
 	return l.commentExp.ReplaceAllString(v, "")
 }
 
-func (l linter) getQueryString(exp interface{}) string {
+func (l linter) getQueryString(exp any) string {
 	switch e := exp.(type) {
 	case *ast.AssignStmt:
 		var v string

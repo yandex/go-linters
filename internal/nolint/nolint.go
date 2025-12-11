@@ -89,7 +89,7 @@ func (l LinterIndex) Contains(pos token.Pos) bool {
 	return false
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	files := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files).List()
 
 	// gather nolint index

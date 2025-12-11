@@ -105,7 +105,7 @@ func funcName(node ast.Node) string {
 	}
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		pathToFile := getPathToFile(pass, file)
 		if strings.HasSuffix(pathToFile, "_test.go") || strings.HasSuffix(pathToFile, "_mock.go") {
