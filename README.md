@@ -37,6 +37,7 @@ import (
     "golang.yandex/linters/passes/remindercheck"
     "golang.yandex/linters/passes/returnstruct"
     "golang.yandex/linters/passes/structtagcase"
+    "golang.yandex/linters/passes/execinquery"
 )
 
 func main() {
@@ -50,6 +51,7 @@ func main() {
         remindercheck.Analyzer,
         returnstruct.Analyzer,
         structtagcase.Analyzer,
+        execinquery.Analyzer,
     )
 }
 ```
