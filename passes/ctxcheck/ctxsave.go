@@ -16,7 +16,7 @@ var CtxSaveAnalyzer = &analysis.Analyzer{
 	Run:      ctxsave,
 }
 
-func ctxsave(pass *analysis.Pass) (interface{}, error) {
+func ctxsave(pass *analysis.Pass) (any, error) {
 	ins := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{

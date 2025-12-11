@@ -34,7 +34,7 @@ func (f *Files) Generated() []*ast.File {
 	return f.generated
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	nonGenFiles := make([]*ast.File, 0, len(pass.Files)/2)
 	genFiles := make([]*ast.File, 0, len(pass.Files)/2)
 

@@ -1,14 +1,14 @@
 package assert
 
 type TestingT interface {
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 }
 
-func Equal(t TestingT, a, b interface{}, msgAndArgs ...interface{}) bool {
+func Equal(t TestingT, a, b any, msgAndArgs ...any) bool {
 	panic("not implemented")
 }
 
-func Equalf(t TestingT, a, b interface{}, msg string, args ...interface{}) bool {
+func Equalf(t TestingT, a, b any, msg string, args ...any) bool {
 	panic("not implemented")
 }
 
@@ -18,10 +18,10 @@ func New(t TestingT) *Assertions {
 	return nil
 }
 
-func (*Assertions) Equal(a, b interface{}, msgAndArgs ...interface{}) bool {
+func (*Assertions) Equal(a, b any, msgAndArgs ...any) bool {
 	panic("not implemented")
 }
 
-func (*Assertions) Equalf(a, b interface{}, msg string, args ...interface{}) bool {
+func (*Assertions) Equalf(a, b any, msg string, args ...any) bool {
 	panic("not implemented")
 }

@@ -1,14 +1,14 @@
 package require
 
 type TestingT interface {
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 }
 
-func Equal(t TestingT, a, b interface{}, msgAndArgs ...interface{}) {
+func Equal(t TestingT, a, b any, msgAndArgs ...any) {
 	panic("not implemented")
 }
 
-func Equalf(t TestingT, a, b interface{}, msg string, args ...interface{}) {
+func Equalf(t TestingT, a, b any, msg string, args ...any) {
 	panic("not implemented")
 }
 
@@ -18,10 +18,10 @@ func New(t TestingT) *Assertions {
 	return nil
 }
 
-func (*Assertions) Equal(a, b interface{}, msgAndArgs ...interface{}) {
+func (*Assertions) Equal(a, b any, msgAndArgs ...any) {
 	panic("not implemented")
 }
 
-func (*Assertions) Equalf(a, b interface{}, msg string, args ...interface{}) {
+func (*Assertions) Equalf(a, b any, msg string, args ...any) {
 	panic("not implemented")
 }
