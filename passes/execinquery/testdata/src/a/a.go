@@ -23,11 +23,23 @@ const deleteWithCommentMultiline = `/* foobar
 DELETE * FROM test WHERE test=?
 `
 
+const showWithComment = `-- foobar
+SHOW tables
+`
+
 func sample(db *sql.DB) {
 	s := "alice"
 
 	_ = db.QueryRowContext(context.Background(), "SELECT * FROM test WHERE test=?", s)
 	_ = db.QueryRowContext(context.Background(), selectWithComment, s)
+
+	// SHOW queries should be allowed (they return results)
+	_, _ = db.Query("SHOW tables")
+	_, _ = db.Query("SHOW databases")
+	_, _ = db.QueryContext(context.Background(), "SHOW tables")
+	_ = db.QueryRow("SHOW tables")
+	_ = db.QueryRowContext(context.Background(), "SHOW tables")
+	_ = db.QueryRowContext(context.Background(), showWithComment)
 	_ = db.QueryRowContext(context.Background(), deleteWithComment, s)          // want "Use ExecContext instead of QueryRowContext to execute `DELETE` query"
 	_ = db.QueryRowContext(context.Background(), deleteWithCommentMultiline, s) // want "Use ExecContext instead of QueryRowContext to execute `DELETE` query"
 
