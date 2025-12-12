@@ -53,7 +53,7 @@ func (l linter) run(pass *analysis.Pass) (any, error) {
 				return
 			}
 
-			if "database/sql" != pass.TypesInfo.Uses[selector.Sel].Pkg().Path() {
+			if pass.TypesInfo.Uses[selector.Sel].Pkg().Path() != "database/sql" {
 				return
 			}
 
