@@ -81,7 +81,7 @@ func (l linter) run(pass *analysis.Pass) (any, error) {
 			parts := strings.SplitN(query, " ", 2)
 			cmd := strings.ToUpper(parts[0])
 
-			if strings.HasPrefix(cmd, "SELECT") {
+			if strings.HasPrefix(cmd, "SELECT") || strings.HasPrefix(cmd, "SHOW") {
 				return
 			}
 
