@@ -20,7 +20,6 @@ results
 8. **[ctxcheck](/passes/ctxcheck)** - Validates proper context usage (position and storage)
 9. **[execinquery](/passes/execinquery)** - Detects incorrect use of Query methods for non-SELECT SQL statements
 
-
 ## Building custom vettool
 
 Example code to create a vettool with all available analyzers:
