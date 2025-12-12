@@ -18,6 +18,7 @@ results
 6. **[structtagcase](/passes/structtagcase)** - Validates consistent casing in struct tags
 7. **[remindercheck](/passes/remindercheck)** - Verifies TODO/FIXME/BUG comment formatting
 8. **[ctxcheck](/passes/ctxcheck)** - Validates proper context usage (position and storage)
+9. **[execinquery](/passes/execinquery)** - Detects incorrect use of Query methods for non-SELECT SQL statements
 
 ## Building custom vettool
 
