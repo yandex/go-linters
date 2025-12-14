@@ -3,6 +3,13 @@
 `execinquery` is a linter about query string checker in Query function which reads your Go src files and
 warnings it finds.
 
+## Features
+
+- Detects when `Query`, `QueryRow`, `QueryContext`, or `QueryRowContext` are used with non-SELECT queries
+- Suggests using `Exec` or `ExecContext` instead for INSERT, UPDATE, DELETE queries
+- Supports PostgreSQL `RETURNING` clauses (queries with RETURNING are allowed to use Query/QueryRow)
+- Handles SQL comments (single-line `--` and multi-line `/* */`)
+
 > # Disclaimer
 >
 > This is a fork of the original linter repository [execinquery](https://github.com/1uf3/execinquery).
