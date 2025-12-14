@@ -2,6 +2,7 @@ package execinquery
 
 import (
 	"go/ast"
+	"go/token"
 	"regexp"
 	"strings"
 
@@ -25,18 +26,41 @@ var Analyzer = &analysis.Analyzer{
 type linter struct {
 	commentExp          *regexp.Regexp
 	multilineCommentExp *regexp.Regexp
+	// varAssignments tracks the most recent assignment for each variable
+	// key: variable name, value: map of position to assigned value
+	varAssignments map[string]map[token.Pos]ast.Expr
 }
 
 func newLinter() *linter {
 	return &linter{
 		commentExp:          regexp.MustCompile(`--[^\n]*\n`),
 		multilineCommentExp: regexp.MustCompile(`(?s)/\*.*?\*/`),
+		varAssignments:      make(map[string]map[token.Pos]ast.Expr),
 	}
 }
 
-func (l linter) run(pass *analysis.Pass) (any, error) {
+func (l *linter) run(pass *analysis.Pass) (any, error) {
 	result := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
+	// First pass: collect all variable assignments
+	assignFilter := []ast.Node{
+		(*ast.AssignStmt)(nil),
+	}
+
+	result.Preorder(assignFilter, func(n ast.Node) {
+		if assign, ok := n.(*ast.AssignStmt); ok {
+			for i, lhs := range assign.Lhs {
+				if ident, ok := lhs.(*ast.Ident); ok && i < len(assign.Rhs) {
+					if l.varAssignments[ident.Name] == nil {
+						l.varAssignments[ident.Name] = make(map[token.Pos]ast.Expr)
+					}
+					l.varAssignments[ident.Name][assign.Pos()] = assign.Rhs[i]
+				}
+			}
+		}
+	})
+
+	// Second pass: check Query calls
 	nodeFilter := []ast.Node{
 		(*ast.CallExpr)(nil),
 	}
@@ -72,7 +96,7 @@ func (l linter) run(pass *analysis.Pass) (any, error) {
 				return
 			}
 
-			query := l.getQueryString(n.Args[i])
+			query := l.getQueryString(n.Args[i], n.Pos())
 			if query == "" {
 				return
 			}
@@ -106,12 +130,12 @@ func (l linter) cleanValue(s string) string {
 	return l.commentExp.ReplaceAllString(v, "")
 }
 
-func (l linter) getQueryString(exp any) string {
+func (l *linter) getQueryString(exp any, callPos token.Pos) string {
 	switch e := exp.(type) {
 	case *ast.AssignStmt:
 		var v string
 		for _, stmt := range e.Rhs {
-			v += l.cleanValue(l.getQueryString(stmt))
+			v += l.cleanValue(l.getQueryString(stmt, callPos))
 		}
 		return v
 
@@ -121,19 +145,36 @@ func (l linter) getQueryString(exp any) string {
 	case *ast.ValueSpec:
 		var v string
 		for _, value := range e.Values {
-			v += l.cleanValue(l.getQueryString(value))
+			v += l.cleanValue(l.getQueryString(value, callPos))
 		}
 		return v
 
 	case *ast.Ident:
+		// Check for reassignments first
+		if assignments, ok := l.varAssignments[e.Name]; ok {
+			// Find the most recent assignment before the call position
+			var latestPos token.Pos
+			var latestExpr ast.Expr
+			for pos, expr := range assignments {
+				if pos < callPos && pos > latestPos {
+					latestPos = pos
+					latestExpr = expr
+				}
+			}
+			if latestExpr != nil {
+				return l.getQueryString(latestExpr, callPos)
+			}
+		}
+
+		// Fall back to original declaration
 		if e.Obj == nil {
 			return ""
 		}
-		return l.getQueryString(e.Obj.Decl)
+		return l.getQueryString(e.Obj.Decl, callPos)
 
 	case *ast.BinaryExpr:
-		v := l.cleanValue(l.getQueryString(e.X))
-		v += l.cleanValue(l.getQueryString(e.Y))
+		v := l.cleanValue(l.getQueryString(e.X, callPos))
+		v += l.cleanValue(l.getQueryString(e.Y, callPos))
 		return v
 	}
 
