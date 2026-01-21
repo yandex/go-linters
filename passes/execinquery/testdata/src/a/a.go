@@ -114,6 +114,16 @@ UPDATE * ` + `FROM test` + ` WHERE test=?`
 	INSERT INTO test (name) VALUES (?) RETURNING id`
 	_ = db.QueryRow(insertReturningWithComment, s)
 
+	// UPSERT with RETURNING (ON CONFLICT ... DO UPDATE)
+	upsertQuery := `
+		INSERT INTO users (id, other_id, display_name)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (other_id)
+		DO UPDATE SET display_name = COALESCE(NULLIF(EXCLUDED.display_name, ''), users.display_name)
+		RETURNING id, other_id, display_name;
+	`
+	_ = db.QueryRow(upsertQuery, 1, 2, "test")
+
 	err := errors.New("oops")
 	err.Error()
 }
