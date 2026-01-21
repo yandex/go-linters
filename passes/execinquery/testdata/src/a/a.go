@@ -74,6 +74,56 @@ UPDATE * FROM test WHERE test=?`
 UPDATE * ` + `FROM test` + ` WHERE test=?`
 	_ = db.QueryRow(f5, s) // want "Use Exec instead of QueryRow to execute `UPDATE` query"
 
+	// PostgreSQL RETURNING queries should be allowed (they return results)
+	// INSERT with RETURNING
+	_ = db.QueryRow("INSERT INTO test (name) VALUES (?) RETURNING id", s)
+	_ = db.QueryRowContext(context.Background(), "INSERT INTO test (name) VALUES (?) RETURNING id", s)
+	_, _ = db.Query("INSERT INTO test (name) VALUES (?) RETURNING id, name", s)
+	_, _ = db.QueryContext(context.Background(), "INSERT INTO test (name) VALUES (?) RETURNING *", s)
+
+	// UPDATE with RETURNING
+	_ = db.QueryRow("UPDATE test SET name=? WHERE id=1 RETURNING id", s)
+	_ = db.QueryRowContext(context.Background(), "UPDATE test SET name=? WHERE id=1 RETURNING id, name", s)
+	_, _ = db.Query("UPDATE test SET name=? WHERE id=1 RETURNING *", s)
+	_, _ = db.QueryContext(context.Background(), "UPDATE test SET name=? RETURNING id", s)
+
+	// DELETE with RETURNING
+	_ = db.QueryRow("DELETE FROM test WHERE id=1 RETURNING id", s)
+	_ = db.QueryRowContext(context.Background(), "DELETE FROM test WHERE id=1 RETURNING id, name", s)
+	_, _ = db.Query("DELETE FROM test WHERE id=1 RETURNING *", s)
+	_, _ = db.QueryContext(context.Background(), "DELETE FROM test WHERE id=1 RETURNING id", s)
+
+	// RETURNING with different casing and formatting
+	_ = db.QueryRow("INSERT INTO test (name) VALUES (?) returning id", s)
+	_ = db.QueryRow("UPDATE test SET name=? WHERE id=1 ReTuRnInG id", s)
+	_ = db.QueryRow(`
+		INSERT INTO test (name)
+		VALUES (?)
+		RETURNING id, created_at
+	`, s)
+
+	// RETURNING in const/var
+	const insertReturning = "INSERT INTO test (name) VALUES (?) RETURNING id"
+	_ = db.QueryRow(insertReturning, s)
+
+	updateReturning := "UPDATE test SET name=? WHERE id=1 RETURNING id"
+	_ = db.QueryRow(updateReturning, s)
+
+	// RETURNING with comments
+	const insertReturningWithComment = `-- Insert and return ID
+	INSERT INTO test (name) VALUES (?) RETURNING id`
+	_ = db.QueryRow(insertReturningWithComment, s)
+
+	// UPSERT with RETURNING (ON CONFLICT ... DO UPDATE)
+	upsertQuery := `
+		INSERT INTO users (id, other_id, display_name)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (other_id)
+		DO UPDATE SET display_name = COALESCE(NULLIF(EXCLUDED.display_name, ''), users.display_name)
+		RETURNING id, other_id, display_name;
+	`
+	_ = db.QueryRow(upsertQuery, 1, 2, "test")
+
 	err := errors.New("oops")
 	err.Error()
 }

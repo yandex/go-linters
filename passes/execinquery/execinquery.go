@@ -85,6 +85,12 @@ func (l linter) run(pass *analysis.Pass) (any, error) {
 				return
 			}
 
+			// PostgreSQL RETURNING clause makes INSERT/UPDATE/DELETE return rows
+			upperQuery := strings.ToUpper(query)
+			if strings.Contains(upperQuery, "RETURNING") {
+				return
+			}
+
 			pass.Reportf(n.Fun.Pos(), "Use %s instead of %s to execute `%s` query", replacement, selector.Sel.Name, cmd)
 		}
 	})
