@@ -48,15 +48,21 @@ func (l *linter) run(pass *analysis.Pass) (any, error) {
 	}
 
 	result.Preorder(assignFilter, func(n ast.Node) {
-		if assign, ok := n.(*ast.AssignStmt); ok {
-			for i, lhs := range assign.Lhs {
-				if ident, ok := lhs.(*ast.Ident); ok && i < len(assign.Rhs) {
-					if l.varAssignments[ident.Name] == nil {
-						l.varAssignments[ident.Name] = make(map[token.Pos]ast.Expr)
-					}
-					l.varAssignments[ident.Name][assign.Pos()] = assign.Rhs[i]
-				}
+		assign, ok := n.(*ast.AssignStmt)
+		if !ok {
+			return
+		}
+
+		for i, lhs := range assign.Lhs {
+			ident, ok := lhs.(*ast.Ident)
+			if !ok || i >= len(assign.Rhs) {
+				continue
 			}
+
+			if l.varAssignments[ident.Name] == nil {
+				l.varAssignments[ident.Name] = make(map[token.Pos]ast.Expr)
+			}
+			l.varAssignments[ident.Name][assign.Pos()] = assign.Rhs[i]
 		}
 	})
 
