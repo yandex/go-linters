@@ -126,4 +126,19 @@ UPDATE * ` + `FROM test` + ` WHERE test=?`
 
 	err := errors.New("oops")
 	err.Error()
+
+	// Test case for issue: reassigned variable should use new value
+	f6 := `UPDATE * FROM test WHERE test=?`
+	_, _ = db.Exec(f6, s)
+
+	// re-assign variable f6
+	f6 = `SELECT * FROM test WHERE test=?`
+	_ = db.QueryRow(f6, s) // This should NOT trigger a warning (SELECT is allowed)
+
+	// Another reassignment test
+	f7 := `DELETE * FROM test WHERE test=?`
+	_ = db.QueryRow(f7, s) // want "Use Exec instead of QueryRow to execute `DELETE` query"
+
+	f7 = `SELECT * FROM test WHERE test=?`
+	_ = db.QueryRow(f7, s) // This should NOT trigger a warning (SELECT is allowed)
 }
