@@ -18,7 +18,7 @@ var Analyzer = &analysis.Analyzer{
 	Doc:              `remove generated files for later passes`,
 	Run:              run,
 	RunDespiteErrors: true,
-	ResultType:       reflect.TypeOf(new(Files)),
+	ResultType:       reflect.TypeFor[*Files](),
 }
 
 type Files struct {

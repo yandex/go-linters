@@ -36,8 +36,6 @@ go tool cover -html=coverage.out -o coverage.html
   - `testdata/src/[case]/` - Test input files with `// want` comments
 - `internal/` - Shared utilities
   - `lintutils/` - Common linting utilities
-  - `nolint/` // Handles `//nolint:` directives
-  - `nogen/` - Filters generated files
 - `.github/workflows/` - CI configuration
 
 ### Analyzer Pattern
@@ -48,10 +46,6 @@ var Analyzer = &analysis.Analyzer{
     Doc:  "Description of what it does",
     Run:  run,
     Flags: flags,  // Optional
-    Requires: []*analysis.Analyzer{
-        nolint.Analyzer,
-        nogen.Analyzer,
-    },
 }
 ```
 
@@ -90,10 +84,7 @@ All analyzers use these shared utilities:
 ### Analyzer Implementation Pattern
 ```go
 func run(pass *analysis.Pass) (any, error) {
-    nogenFiles := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files)
-    nolintIndex := lintutils.ResultOf(pass, nolint.Name).(*nolint.Index)
-    
-    ins := inspector.New(nogenFiles.List())
+    ins := inspector.New(pass.Files)
     
     nodeFilter := []ast.Node{
         (*ast.TargetNodeType)(nil),
@@ -117,23 +108,6 @@ func init() {
 ```
 
 ## Important Gotchas
-
-### Generated File Filtering
-Always use `nogen.Analyzer` to filter generated files:
-```go
-nogenFiles := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files)
-ins := inspector.New(nogenFiles.List())
-```
-
-### Nolint Handling
-Always respect `//nolint:` directives:
-```go
-nolintIndex := lintutils.ResultOf(pass, nolint.Name).(*nolint.Index)
-nolintNodes := nolintIndex.ForLinter(Name)
-if nolintNodes.Excluded(node) {
-    continue
-}
-```
 
 ### Test File Naming
 - Test files ending in `_test.go` should be skipped in analysis

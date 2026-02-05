@@ -8,9 +8,7 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
-
 	"golang.yandex/linters/internal/lintutils"
-	"golang.yandex/linters/internal/nogen"
 )
 
 const (
@@ -24,10 +22,7 @@ var Analyzer = &analysis.Analyzer{
 	Doc:              `removes Nodes under nolint directives for later passes`,
 	Run:              run,
 	RunDespiteErrors: true,
-	ResultType:       reflect.TypeOf(new(Index)),
-	Requires: []*analysis.Analyzer{
-		nogen.Analyzer,
-	},
+	ResultType:       reflect.TypeFor[*Index](),
 }
 
 type Index struct {
@@ -49,7 +44,7 @@ func (i Index) ForLinter(linter string) *LinterIndex {
 }
 
 func (i Index) nodesForLinter(linter string) ([]ast.Node, bool) {
-	// TODO(buglloc): leave only names in lowercase after migration
+	// TODO: leave only names in lowercase after migration
 	// first try original linter name
 	legacyNodes, legacyOK := i.idx[linter]
 	// then name in lowercase
@@ -90,12 +85,10 @@ func (l LinterIndex) Contains(pos token.Pos) bool {
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	files := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files).List()
-
 	// gather nolint index
 	index := make(map[string][]ast.Node)
 
-	for _, file := range files {
+	for _, file := range pass.Files {
 		for _, cg := range file.Comments {
 			linters := getNolintNames(cg)
 			if len(linters) == 0 {

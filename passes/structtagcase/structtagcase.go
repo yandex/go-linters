@@ -10,10 +10,6 @@ import (
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/ast/inspector"
-
-	"golang.yandex/linters/internal/lintutils"
-	"golang.yandex/linters/internal/nogen"
-	"golang.yandex/linters/internal/nolint"
 )
 
 func init() {
@@ -61,19 +57,10 @@ var Analyzer = &analysis.Analyzer{
 	Doc:   `structtagcase checks that you use consistent name case in struct tags`,
 	Run:   run,
 	Flags: flags,
-	Requires: []*analysis.Analyzer{
-		nolint.Analyzer,
-		nogen.Analyzer,
-	},
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	nogenFiles := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files)
-
-	nolintIndex := lintutils.ResultOf(pass, nolint.Name).(*nolint.Index)
-	nolintNodes := nolintIndex.ForLinter(Name)
-
-	ins := inspector.New(nogenFiles.List())
+	ins := inspector.New(pass.Files)
 
 	// filter only function calls.
 	nodeFilter := []ast.Node{
@@ -86,15 +73,7 @@ func run(pass *analysis.Pass) (any, error) {
 			return false
 		}
 
-		structNode := n.(*ast.StructType)
-
-		// skip nolint node
-		if nolintNodes.Excluded(structNode) {
-			return false
-		}
-
-		checkTagsCasing(pass, structNode, flagForceCasing)
-
+		checkTagsCasing(pass, n.(*ast.StructType), flagForceCasing)
 		return true
 	})
 
