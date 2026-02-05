@@ -6,9 +6,6 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
-
-	"golang.yandex/linters/internal/lintutils"
-	"golang.yandex/linters/internal/nogen"
 )
 
 const (
@@ -27,15 +24,10 @@ var Analyzer = &analysis.Analyzer{
 	Name: Name,
 	Doc:  Doc,
 	Run:  run,
-	Requires: []*analysis.Analyzer{
-		nogen.Analyzer,
-	},
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	nogenFiles := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files)
-
-	for _, file := range nogenFiles.List() {
+	for _, file := range pass.Files {
 		checkPackageName(pass, file, packageName(file))
 
 		for _, decl := range file.Decls {

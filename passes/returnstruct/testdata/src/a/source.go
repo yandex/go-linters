@@ -36,8 +36,3 @@ func ReturnInterface() Copier { // want `function must return concrete type, not
 func ReturnExternalInterface() io.Closer { // want `function must return concrete type, not interface io.Closer`
 	return new(User)
 }
-
-//nolint:returnstruct
-func NolintInterfaceReturn() Copier {
-	return new(User)
-}

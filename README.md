@@ -20,6 +20,67 @@ results
 8. **[ctxcheck](/passes/ctxcheck)** - Validates proper context usage (position and storage)
 9. **[execinquery](/passes/execinquery)** - Detects incorrect use of Query methods for non-SELECT SQL statements
 
+## Analyzer Middlewares
+
+Middlewares are wrapper functions that enhance analyzers with additional capabilities. They intercept the analysis execution to add filtering or behavior modification.
+
+### Available Middlewares
+
+1. **Nogen** - Skips linting for generated files
+   - Automatically detects generated files (using standard Go markers)
+   - Suppresses all diagnostics from generated code
+
+2. **Nolint** - Enables selective linting suppression via comments
+   - Supports `//nolint:analyzername` comment directives
+   - Allows developers to silence false positives
+   - Adds helpful messages suggesting how to suppress reports
+
+### Usage Examples
+
+#### Wrapping a single analyzer
+
+```go
+import (
+    "golang.org/x/tools/go/analysis/passes/nilness"
+    "golang.yandex/linters/middlewares"
+)
+
+// Skip generated files for nilness analyzer
+wrappedAnalyzer := middlewares.Nogen(nilness.Analyzer)
+
+// Enable nolint comments for nilness analyzer
+wrappedAnalyzer := middlewares.Nolint(nilness.Analyzer)
+```
+
+#### Combining multiple middlewares
+
+```go
+// Apply both Nogen and Nolint to an analyzer
+wrappedAnalyzer := middlewares.Nolint(
+    middlewares.Nogen(nilness.Analyzer),
+)
+```
+
+#### Using in vettool
+
+```go
+package main
+
+import (
+    "golang.org/x/tools/go/analysis/unitchecker"
+    "golang.yandex/linters/middlewares"
+    "golang.yandex/linters/passes/returnstruct"
+)
+
+func main() {
+    unitchecker.Main(
+        middlewares.Nolint(
+            middlewares.Nogen(returnstruct.Analyzer),
+        ),
+    )
+}
+```
+
 ## Building custom vettool
 
 Example code to create a vettool with all available analyzers:

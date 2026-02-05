@@ -8,9 +8,6 @@ import (
 	"unicode"
 
 	"golang.org/x/tools/go/analysis"
-
-	"golang.yandex/linters/internal/lintutils"
-	"golang.yandex/linters/internal/nogen"
 )
 
 func Analyzer() *analysis.Analyzer {
@@ -18,9 +15,6 @@ func Analyzer() *analysis.Analyzer {
 		Name: "remindercheck",
 		Doc:  "Checks remind comments are formatted properly",
 		Run:  run,
-		Requires: []*analysis.Analyzer{
-			nogen.Analyzer,
-		},
 	}
 
 	a.Flags.String("keywords", defaultKeywords, "Comment patterns to check")
@@ -38,8 +32,6 @@ const (
 )
 
 func run(pass *analysis.Pass) (any, error) {
-	files := lintutils.ResultOf(pass, nogen.Name).(*nogen.Files).List()
-
 	format := pass.Analyzer.Flags.Lookup("format").Value.String()
 	re, err := regexp.Compile(format)
 	if err != nil {
@@ -51,7 +43,7 @@ func run(pass *analysis.Pass) (any, error) {
 		keywords[i] = strings.ToLower(strings.TrimSpace(keyword))
 	}
 
-	for _, file := range files {
+	for _, file := range pass.Files {
 		for _, cg := range file.Comments {
 			for _, c := range cg.List {
 				err := checkComment(c.Text, keywords, re)
