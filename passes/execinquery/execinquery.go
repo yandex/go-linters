@@ -115,6 +115,11 @@ func (l *linter) run(pass *analysis.Pass) (any, error) {
 				return
 			}
 
+			// Allow BEGIN transaction statements
+			if cmd == "BEGIN" {
+				return
+			}
+
 			// PostgreSQL RETURNING clause makes INSERT/UPDATE/DELETE return rows
 			upperQuery := strings.ToUpper(query)
 			if strings.Contains(upperQuery, "RETURNING") {

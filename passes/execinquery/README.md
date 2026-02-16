@@ -8,6 +8,7 @@ warnings it finds.
 - Detects when `Query`, `QueryRow`, `QueryContext`, or `QueryRowContext` are used with non-SELECT queries
 - Suggests using `Exec` or `ExecContext` instead for INSERT, UPDATE, DELETE queries
 - Supports PostgreSQL `RETURNING` clauses (queries with RETURNING are allowed to use Query/QueryRow)
+- Allows transaction control statements (`BEGIN`) to use Query methods (for compatibility)
 - Handles SQL comments (single-line `--` and multi-line `/* */`)
 
 > # Disclaimer
