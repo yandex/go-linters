@@ -40,6 +40,14 @@ func sample(db *sql.DB) {
 	_ = db.QueryRow("SHOW tables")
 	_ = db.QueryRowContext(context.Background(), "SHOW tables")
 	_ = db.QueryRowContext(context.Background(), showWithComment)
+
+	// BEGIN transaction statements should be allowed (transaction control)
+	_, _ = db.Query("BEGIN")
+	_, _ = db.QueryContext(context.Background(), "BEGIN")
+	_, _ = db.Query("BEGIN TRANSACTION")
+	_ = db.QueryRow("BEGIN")
+	_ = db.QueryRowContext(context.Background(), "BEGIN")
+
 	_ = db.QueryRowContext(context.Background(), deleteWithComment, s)          // want "Use ExecContext instead of QueryRowContext to execute `DELETE` query"
 	_ = db.QueryRowContext(context.Background(), deleteWithCommentMultiline, s) // want "Use ExecContext instead of QueryRowContext to execute `DELETE` query"
 
