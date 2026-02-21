@@ -13,19 +13,27 @@ import (
 
 const doc = "execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds"
 
+var (
+	commentExp          = regexp.MustCompile(`--[^\n]*\n`)
+	multilineCommentExp = regexp.MustCompile(`(?s)/\*.*?\*/`)
+)
+
 // Analyzer is checking database/sql pkg Query's function
 var Analyzer = &analysis.Analyzer{
 	Name: "execinquery",
 	Doc:  doc,
-	Run:  newLinter().run,
+	Run:  run,
 	Requires: []*analysis.Analyzer{
 		inspect.Analyzer,
 	},
 }
 
+func run(pass *analysis.Pass) (any, error) {
+	l := newLinter()
+	return l.run(pass)
+}
+
 type linter struct {
-	commentExp          *regexp.Regexp
-	multilineCommentExp *regexp.Regexp
 	// varAssignments tracks the most recent assignment for each variable
 	// key: variable name, value: map of position to assigned value
 	varAssignments map[string]map[token.Pos]ast.Expr
@@ -33,9 +41,7 @@ type linter struct {
 
 func newLinter() *linter {
 	return &linter{
-		commentExp:          regexp.MustCompile(`--[^\n]*\n`),
-		multilineCommentExp: regexp.MustCompile(`(?s)/\*.*?\*/`),
-		varAssignments:      make(map[string]map[token.Pos]ast.Expr),
+		varAssignments: make(map[string]map[token.Pos]ast.Expr),
 	}
 }
 
@@ -131,9 +137,9 @@ func (l *linter) run(pass *analysis.Pass) (any, error) {
 func (l linter) cleanValue(s string) string {
 	v := strings.NewReplacer(`"`, "", "`", "").Replace(s)
 
-	v = l.multilineCommentExp.ReplaceAllString(v, "")
+	v = multilineCommentExp.ReplaceAllString(v, "")
 
-	return l.commentExp.ReplaceAllString(v, "")
+	return commentExp.ReplaceAllString(v, "")
 }
 
 func (l *linter) getQueryString(exp any, callPos token.Pos) string {
