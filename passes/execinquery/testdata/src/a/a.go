@@ -50,7 +50,7 @@ func sample(db *sql.DB) {
 	_, _ = db.QueryContext(context.Background(), "UPDATE * FROM test WHERE test=?", s) // want "Use ExecContext instead of QueryContext to execute `UPDATE` query"
 	_ = db.QueryRow("UPDATE * FROM test WHERE test=?", s)                              // want "Use Exec instead of QueryRow to execute `UPDATE` query"
 
-	_, _ = db.Query(otherFileValue, s)
+	_, _ = db.Query(otherFileValue, s) // want "Use Exec instead of Query to execute `UPDATE` query"
 
 	query := "UPDATE * FROM test where test=?"
 	_, _ = db.Query(query, s) // want "Use Exec instead of Query to execute `UPDATE` query"
@@ -141,4 +141,17 @@ UPDATE * ` + `FROM test` + ` WHERE test=?`
 
 	f7 = `SELECT * FROM test WHERE test=?`
 	_ = db.QueryRow(f7, s) // This should NOT trigger a warning (SELECT is allowed)
+
+	f8 := `DELETE FROM test WHERE test=?`
+	f8 = `SELECT * FROM test WHERE test=?`
+	_ = db.QueryRow(f8, s) // This should NOT trigger a warning (SELECT is allowed)
+}
+
+func queryFunc() string {
+	query := "BEGIN"
+	return query
+}
+
+func usageFunc(db *sql.DB, query string) {
+	_ = db.QueryRow(query)
 }
