@@ -145,6 +145,12 @@ UPDATE * ` + `FROM test` + ` WHERE test=?`
 	f8 := `DELETE FROM test WHERE test=?`
 	f8 = `SELECT * FROM test WHERE test=?`
 	_ = db.QueryRow(f8, s) // This should NOT trigger a warning (SELECT is allowed)
+
+	builder := `SELECT * FROM test WHERE test=?`
+	if f8 != "" {
+		builder += ` AND test2=?`
+	}
+	_ = db.QueryRow(builder, s)
 }
 
 func queryFunc() string {

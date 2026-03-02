@@ -5,6 +5,7 @@ import (
 	"go/token"
 	"maps"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
@@ -77,24 +78,49 @@ func inspectFunc(pass *analysis.Pass, funcDecl *ast.FuncDecl, vars map[string]as
 	for n := range ast.Preorder(funcDecl) {
 		switch node := n.(type) {
 		case *ast.AssignStmt:
-			maps.Copy(vars, collectAssignmentVariables(node))
+			vars = collectAssignmentVariables(node, vars)
 		case *ast.CallExpr:
 			inspectCallExpr(pass, node, vars)
 		}
 	}
 }
 
-func collectAssignmentVariables(assn *ast.AssignStmt) map[string]ast.Expr {
-	vars := make(map[string]ast.Expr)
+func collectAssignmentVariables(assn *ast.AssignStmt, vars map[string]ast.Expr) map[string]ast.Expr {
 	for i, lhs := range assn.Lhs {
 		ident, ok := lhs.(*ast.Ident)
 		if !ok || i >= len(assn.Rhs) {
 			continue
 		}
-		vars[ident.Name] = assn.Rhs[i]
+
+		if assn.Tok == token.ADD_ASSIGN {
+			vars[ident.Name] = concatExpr(vars[ident.Name], assn.Rhs[i])
+		} else {
+			vars[ident.Name] = assn.Rhs[i]
+		}
 	}
 
 	return vars
+}
+
+func concatExpr(target, addition ast.Expr) ast.Expr {
+	targetLit, ok := target.(*ast.BasicLit)
+	if !ok {
+		return target
+	}
+	additionLit, ok := addition.(*ast.BasicLit)
+	if !ok {
+		return target
+	}
+
+	if targetLit.Kind != token.STRING {
+		return target
+	}
+
+	return &ast.BasicLit{
+		ValuePos: targetLit.ValuePos,
+		Kind:     targetLit.Kind,
+		Value:    strconv.Quote(trimLitQuotes(targetLit.Value) + trimLitQuotes(additionLit.Value)),
+	}
 }
 
 func inspectCallExpr(pass *analysis.Pass, callExpr *ast.CallExpr, vars map[string]ast.Expr) {
@@ -190,4 +216,21 @@ func cleanValue(s string) string {
 	v := strings.NewReplacer(`"`, "", "`", "").Replace(s)
 	v = multilineCommentExp.ReplaceAllString(v, "")
 	return commentExp.ReplaceAllString(v, "")
+}
+
+func trimLitQuotes(value string) string {
+	if value == "" {
+		return value
+	}
+
+	switch value[0] {
+	case '"':
+		return strings.TrimPrefix(strings.TrimSuffix(value, `"`), `"`)
+	case '\'':
+		return strings.TrimPrefix(strings.TrimSuffix(value, `'`), `'`)
+	case '`':
+		return strings.TrimPrefix(strings.TrimSuffix(value, "`"), "`")
+	default:
+		return value
+	}
 }
