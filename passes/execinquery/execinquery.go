@@ -155,12 +155,8 @@ func inspectCallExpr(pass *analysis.Pass, callExpr *ast.CallExpr, vars map[strin
 	}
 
 	query = strings.TrimSpace(cleanValue(query))
-	delim := strings.IndexByte(query, ' ')
-	if delim == -1 {
-		return
-	}
 
-	cmd := query[:delim]
+	cmd := extractCmd(query)
 	if strings.EqualFold(cmd, "SELECT") || strings.EqualFold(cmd, "SHOW") {
 		return
 	}
@@ -210,6 +206,24 @@ func getQueryString(exp any, vars map[string]ast.Expr) string {
 	}
 
 	return ""
+}
+
+func extractCmd(query string) string {
+	start, end := -1, len(query)
+	for i, r := range query {
+		if start == -1 && (r > ' ' && r < '~') {
+			start = i
+			continue
+		}
+		if start != -1 && (r <= ' ' || r >= '~') {
+			end = i
+			break
+		}
+	}
+	if start == -1 {
+		return ""
+	}
+	return query[start:end]
 }
 
 func cleanValue(s string) string {
