@@ -151,6 +151,16 @@ UPDATE * ` + `FROM test` + ` WHERE test=?`
 		builder += ` AND test2=?`
 	}
 	_ = db.QueryRow(builder, s)
+
+	contextID := "199999123512514"
+	f9 := `
+		SELECT
+			id, context_id
+		FROM messages
+		WHERE context_id = $1
+		ORDER BY created_at ASC
+	`
+	_, _ = db.Query(f9, contextID)
 }
 
 func queryFunc() string {
