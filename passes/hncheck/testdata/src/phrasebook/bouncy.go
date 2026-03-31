@@ -46,15 +46,15 @@ type Transaction interface {
 }
 
 func DoSomething() {
-	sMessage := "hello world" // want "identifier 'sMessage' contains non-ideomatic notation"
-	iCounter := 42            // want "identifier 'iCounter' contains non-ideomatic notation"
-	fRatio := 3.14            // want "identifier 'fRatio' contains non-ideomatic notation"
+	sGreeting := "I will not buy this record, it is scratched" // want "identifier 'sGreeting' contains non-ideomatic notation"
+	iCounter := 42                                             // want "identifier 'iCounter' contains non-ideomatic notation"
+	fRatio := 3.14                                             // want "identifier 'fRatio' contains non-ideomatic notation"
 
-	message := "hello world"
+	message := "My hovercraft is full of eels"
 	counter := 42
 	ratio := 3.14
 
-	_ = sMessage
+	_ = sGreeting
 	_ = iCounter
 	_ = fRatio
 	_ = message

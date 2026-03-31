@@ -9,7 +9,7 @@ import (
 
 var Analyzer = &analysis.Analyzer{
 	Name: "hncheck",
-	Doc:  `I will not buy this record, it is scratched`,
+	Doc:  `checks for non-ideomatic notation in identifiers`,
 	Run:  run,
 }
 
