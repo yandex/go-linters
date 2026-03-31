@@ -19,6 +19,7 @@ results
 7. **[remindercheck](/passes/remindercheck)** - Verifies TODO/FIXME/BUG comment formatting
 8. **[ctxcheck](/passes/ctxcheck)** - Validates proper context usage (position and storage)
 9. **[execinquery](/passes/execinquery)** - Detects incorrect use of Query methods for non-SELECT SQL statements
+9. **[hncheck](/passes/hncheck)** - Checks for variables/constants/types names for Hungarian notation usage
 
 ## Analyzer Middlewares
 
