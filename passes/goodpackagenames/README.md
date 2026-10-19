@@ -24,6 +24,16 @@ import tokenAuth "path"  // want "invalid import name"
 import tokenauth "path"
 ```
 
+## Suggested fix
+
+For an invalid import alias the analyzer suggests renaming it to the canonical name together with all its uses in the file
+(`go vet -fix` applies it). The alias is dropped when the canonical name matches the imported package name.
+
+No fix is suggested when the canonical name is not a valid identifier (e.g. a keyword) or is already taken by another
+declaration visible at one of the uses: a local variable, another import, a package-level declaration or a builtin.
+
+Package names are not fixed automatically: renaming a package affects other files and packages.
+
 ## Usage
 
 Via go vet:
