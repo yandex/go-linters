@@ -1,0 +1,15 @@
+package lintexamples
+
+import (
+	"fmt"
+
+	apitokenauth "a/lintexamples/internal/middlewares/api_token_auth" // want `invalid import name api_token_auth, use apitokenauth`
+	externalusers "a/lintexamples/internal/services/externalUsers"      // want `invalid import name externalUsers, use externalusers`
+)
+
+func wrongImports() {
+	fmt.Println(
+		apitokenauth.PackageName,
+		externalusers.PackageName,
+	)
+}

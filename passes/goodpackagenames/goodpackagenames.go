@@ -1,8 +1,10 @@
 package goodpackagenames
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
@@ -37,7 +39,7 @@ func run(pass *analysis.Pass) (any, error) {
 			}
 
 			if genDecl.Tok == token.IMPORT {
-				checkImports(pass, genDecl)
+				checkImports(pass, file, genDecl)
 			}
 		}
 	}
@@ -52,7 +54,7 @@ func checkPackageName(pass *analysis.Pass, file *ast.File, packageName string) {
 	}
 }
 
-func checkImports(pass *analysis.Pass, decl *ast.GenDecl) {
+func checkImports(pass *analysis.Pass, file *ast.File, decl *ast.GenDecl) {
 	for _, spec := range decl.Specs {
 		importSpec, ok := spec.(*ast.ImportSpec)
 		if !ok {
@@ -61,16 +63,83 @@ func checkImports(pass *analysis.Pass, decl *ast.GenDecl) {
 
 		importName := importName(importSpec)
 		if importName != "" {
-			checkImportName(pass, importSpec, importName)
+			checkImportName(pass, file, importSpec, importName)
 		}
 	}
 }
 
-func checkImportName(pass *analysis.Pass, importSpec *ast.ImportSpec, importName string) {
+func checkImportName(pass *analysis.Pass, file *ast.File, importSpec *ast.ImportSpec, importName string) {
 	canonicName := canonicImportName(importName)
-	if importName != canonicName {
-		pass.Reportf(importSpec.Pos(), "invalid import name %s, use %s", importName, canonicName)
+	if importName == canonicName {
+		return
 	}
+
+	pass.Report(analysis.Diagnostic{
+		Pos:            importSpec.Pos(),
+		Message:        fmt.Sprintf("invalid import name %s, use %s", importName, canonicName),
+		SuggestedFixes: renameImportFix(pass, file, importSpec, canonicName),
+	})
+}
+
+// renameImportFix renames the import alias together with all its uses in the file.
+// The alias is dropped when the new name matches the imported package name.
+// No fix is suggested when the new name is not a valid identifier or is already
+// taken by another declaration visible at any of the uses.
+func renameImportFix(pass *analysis.Pass, file *ast.File, spec *ast.ImportSpec, newName string) []analysis.SuggestedFix {
+	if !token.IsIdentifier(newName) {
+		return nil
+	}
+
+	pkgName, ok := pass.TypesInfo.Defs[spec.Name].(*types.PkgName)
+	if !ok {
+		return nil
+	}
+
+	var uses []*ast.Ident
+	ast.Inspect(file, func(n ast.Node) bool {
+		if ident, ok := n.(*ast.Ident); ok && pass.TypesInfo.Uses[ident] == pkgName {
+			uses = append(uses, ident)
+		}
+
+		return true
+	})
+
+	for _, ident := range uses {
+		scope := pass.Pkg.Scope().Innermost(ident.Pos())
+		if scope == nil {
+			return nil
+		}
+
+		if _, obj := scope.LookupParent(newName, ident.Pos()); obj != nil {
+			return nil
+		}
+	}
+
+	aliasEdit := analysis.TextEdit{
+		Pos:     spec.Name.Pos(),
+		End:     spec.Name.End(),
+		NewText: []byte(newName),
+	}
+	if newName == pkgName.Imported().Name() {
+		aliasEdit = analysis.TextEdit{
+			Pos: spec.Name.Pos(),
+			End: spec.Path.Pos(),
+		}
+	}
+
+	edits := []analysis.TextEdit{aliasEdit}
+	for _, ident := range uses {
+		edits = append(edits, analysis.TextEdit{
+			Pos:     ident.Pos(),
+			End:     ident.End(),
+			NewText: []byte(newName),
+		})
+	}
+
+	return []analysis.SuggestedFix{{
+		Message:   fmt.Sprintf("Rename import %s to %s", spec.Name.Name, newName),
+		TextEdits: edits,
+	}}
 }
 
 func canonicImportName(name string) string {

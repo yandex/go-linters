@@ -10,5 +10,5 @@ import (
 
 func Test(t *testing.T) {
 	testdata := analysistest.TestData()
-	analysistest.Run(t, testdata, goodpackagenames.Analyzer, "a/lintexamples")
+	analysistest.RunWithSuggestedFixes(t, testdata, goodpackagenames.Analyzer, "a/lintexamples")
 }
